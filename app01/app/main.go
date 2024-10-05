@@ -47,7 +47,7 @@ func main() {
 }
 
 func handleRoot(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "Hello from the Go application!")
+	fmt.Fprintf(w, "Hello from the app01 application!")
 }
 
 func handleHealth(w http.ResponseWriter, r *http.Request) {
