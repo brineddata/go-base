@@ -5,8 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My App</title>
     <link rel="stylesheet" href="/css/dark-ubuntu-theme.css">
-    <!-- Include HTMX from CDN -->
-    <script src="https://unpkg.com/htmx.org@1.9.6"></script>
 </head>
 <body>
     <div class="container">
@@ -16,54 +14,34 @@
         
         <div class="card">
             <h2>Connection Status</h2>
-            <div id="app01-status" hx-get="/api/health/app01" hx-trigger="load, every 30s, checkApp01" hx-swap="innerHTML">
-                <p>App01 Connection: <span class="status">Checking...</span></p>
-            </div>
-            <button hx-get="/api/health/app01" hx-target="#app01-status" hx-trigger="click" class="btn">Check App01</button>
-
-            <div id="app02-status" hx-get="/api/health/app02" hx-trigger="load, every 30s, checkApp02" hx-swap="innerHTML">
-                <p>App02 Connection: <span class="status">Checking...</span></p>
-            </div>
-            <button hx-get="/api/health/app02" hx-target="#app02-status" hx-trigger="click" class="btn">Check App02</button>
-
-            <div id="db-status" hx-get="/api/health/db" hx-trigger="load, every 30s, checkDB" hx-swap="innerHTML">
-                <p>Database Connection: <span class="status">Checking...</span></p>
-            </div>
-            <button hx-get="/api/health/db" hx-target="#db-status" hx-trigger="click" class="btn">Check Database</button>
+            <p>App Connection: <span id="appStatus" class="status">Checking...</span></p>
+            <p>Database Connection: <span id="dbStatus" class="status">Checking...</span></p>
+            <button onclick="checkConnections()" class="btn">Check Connections</button>
         </div>
     </div>
 
     <script>
-        htmx.on("htmx:afterRequest", function(evt) {
-            if (evt.detail.elt.id === "app01-status" || evt.detail.elt.id === "app02-status" || evt.detail.elt.id === "db-status") {
-                const data = JSON.parse(evt.detail.xhr.responseText);
-                updateStatus(evt.detail.elt.querySelector('.status'), data.status);
-            }
-        });
-
-        function updateStatus(element, status) {
-            element.textContent = status;
-            element.className = `status ${status === 'Connected' ? 'success' : 'error'}`;
+        function checkConnections() {
+            // Check app connection
+            fetch('/api/health')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('appStatus').textContent = 'Connected';
+                    document.getElementById('appStatus').className = 'status success';
+                    document.getElementById('dbStatus').textContent = 'Connected';
+                    document.getElementById('dbStatus').className = 'status success';
+                })
+                .catch(error => {
+                    document.getElementById('appStatus').textContent = 'Error';
+                    document.getElementById('appStatus').className = 'status error';
+                    document.getElementById('dbStatus').textContent = 'Error';
+                    document.getElementById('dbStatus').className = 'status error';
+                    console.error('Error:', error);
+                });
         }
 
-        // Custom events to trigger individual connection checks
-        function checkApp01() {
-            htmx.trigger("#app01-status", "checkApp01");
-        }
-
-        function checkApp02() {
-            htmx.trigger("#app02-status", "checkApp02");
-        }
-
-        function checkDB() {
-            htmx.trigger("#db-status", "checkDB");
-        }
-
-        function checkAllConnections() {
-            checkApp01();
-            checkApp02();
-            checkDB();
-        }
+        // Check connections on page load
+        checkConnections();
     </script>
 </body>
 </html>

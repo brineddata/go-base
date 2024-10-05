@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connection Checker</title>
+    <link rel="stylesheet" href="/css/dark-ubuntu-theme.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/htmx/1.9.10/htmx.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 {
+            color: #333;
+        }
+        button {
+            margin: 10px 0;
+            padding: 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #results {
+            margin-top: 20px;
+        }
+        .status {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <h1>Connection Checker?</h1>
+    
+    <button hx-post="/check-connections" hx-target="#results" hx-indicator="#spinner">
+        Check Connections
+    </button>
+    
+    <div id="spinner" class="htmx-indicator">
+        Checking connections...
+    </div>
+    
+    <div id="results"></div>
+
+    <script>
+        // Simulated backend response
+        htmx.on("htmx:afterRequest", function(evt) {
+            if (evt.detail.pathInfo.requestPath === "/check-connections") {
+                const results = [
+                    { name: "app01 (8081)", status: Math.random() > 0.5 ? "success" : "error" },
+                    { name: "app02 (8082)", status: Math.random() > 0.5 ? "success" : "error" },
+                    { name: "database (5432)", status: Math.random() > 0.5 ? "success" : "error" }
+                ];
+                
+                let html = "";
+                results.forEach(result => {
+                    html += `
+                        <div class="status ${result.status}">
+                            ${result.name}: ${result.status === "success" ? "Connected" : "Failed to connect"}
+                        </div>
+                    `;
+                });
+                
+                document.getElementById("results").innerHTML = html;
+            }
+        });
+    </script>
+</body>
+</html>
