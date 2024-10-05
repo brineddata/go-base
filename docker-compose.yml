@@ -1,0 +1,60 @@
+version: '3.8'
+
+services:
+  app01:
+    build: ./app01
+    ports:
+      - "8081:8081"
+    environment:
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=mysecretpassword
+      - DB_NAME=myapp
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: on-failure
+
+  app02:
+    build: ./app02
+    ports:
+      - "8082:8082"
+    environment:
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=mysecretpassword
+      - DB_NAME=myapp
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: on-failure
+
+  db:
+    build: ./db01
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=mysecretpassword
+      - POSTGRES_DB=myapp
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d myapp"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  nginx:
+    build: ./nginx01
+    ports:
+      - "80:80"
+    volumes:
+      - ./static:/usr/share/nginx/html
+    depends_on:
+      - app01
+      - app02
+    restart: on-failure
+
+volumes:
+  db_data:
